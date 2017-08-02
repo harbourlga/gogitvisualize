@@ -205,8 +205,12 @@ func buildCols(keys []int, commits map[int]int) map[int]column {
 
 // printCells prints the cells of the graph
 func printCells(cols map[int]column) {
+	printMonths()
 	for j := 6; j >= 0; j-- {
-		for i := weeksInLastSixMonths; i >= 0; i-- {
+		for i := weeksInLastSixMonths + 1; i >= 0; i-- {
+			if i == weeksInLastSixMonths+1 {
+				printDayCol(j)
+			}
 			if col, ok := cols[i]; ok {
 				//special case today
 				if i == 0 && j == calcOffset()-1 {
@@ -223,4 +227,42 @@ func printCells(cols map[int]column) {
 		}
 		fmt.Printf("\n")
 	}
+}
+
+// printMonths prints the month names in the first line, determining when the month
+// changed between switching weeks
+func printMonths() {
+	week := getBeginningOfDay(time.Now()).Add(-(daysInLastSixMonths * time.Hour * 24))
+	month := week.Month()
+	fmt.Printf("         ")
+	for {
+		if week.Month() != month {
+			fmt.Printf("%s ", week.Month().String()[:3])
+			month = week.Month()
+		} else {
+			fmt.Printf("    ")
+		}
+
+		week = week.Add(7 * time.Hour * 24)
+		if week.After(time.Now()) {
+			break
+		}
+	}
+	fmt.Printf("\n")
+}
+
+// printDayCol given the day number (0 is Sunday) prints the day name,
+// alternating the rows (prints just 2,4,6)
+func printDayCol(day int) {
+	out := "     "
+	switch day {
+	case 1:
+		out = " Mon "
+	case 3:
+		out = " Wed "
+	case 5:
+		out = " Fri "
+	}
+
+	fmt.Printf(out)
 }
