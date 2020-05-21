@@ -47,7 +47,7 @@ func openFile(filePath string) *os.File {
 // of each line and parses it to a slice of strings.
 func parseFileLinesToSlice(filePath string) []string {
 	f := openFile(filePath)
-	defer f.Close()
+	defer f.Close()//Go语言的 defer 语句会将其后面跟随的语句进行延迟处理, 等于放入栈栈，待其他所有语句执行完按后进先出的顺序从栈中拉出来执行
 
 	var lines []string
 	scanner := bufio.NewScanner(f)

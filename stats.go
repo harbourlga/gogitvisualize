@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-git/go-git"
+	"github.com/go-git/go-git/plumbing/object"
 	"sort"
 	"time"
-
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 const outOfRange = 99999
@@ -52,17 +51,21 @@ func fillCommits(email string, path string, commits map[int]int) map[int]int {
 	}
 	// get the HEAD reference
 	ref, err := repo.Head()
+	//fmt.Println(ref)
 	if err != nil {
 		panic(err)
 	}
 	// get the commits history starting from HEAD
 	iterator, err := repo.Log(&git.LogOptions{From: ref.Hash()})
+	//fmt.Println(iterator)
 	if err != nil {
 		panic(err)
 	}
 	// iterate the commits
 	offset := calcOffset()
-	err = iterator.ForEach(func(c *object.Commit) error {
+	//fmt.Println(offset)
+	err = iterator.ForEach(func(c *object.Commit) error {  //object为包目录，GO可以引用包目录下所有代码文件的var
+	    //go-git内部自己设立的迭代
 		daysAgo := countDaysSinceDate(c.Author.When) + offset
 
 		if c.Author.Email != email {
@@ -163,6 +166,7 @@ func printCell(val int, today bool) {
 // printCommitsStats prints the commits stats
 func printCommitsStats(commits map[int]int) {
 	keys := sortMapIntoSlice(commits)
+
 	cols := buildCols(keys, commits)
 	printCells(cols)
 }
@@ -172,13 +176,17 @@ func sortMapIntoSlice(m map[int]int) []int {
 	// order map
 	// To store the keys in slice in sorted order
 	var keys []int
-	for k := range m {
+	var count int  //对过去的提交数进行求和
+	for k,v := range m {
 		keys = append(keys, k)
+		count += v
 	}
-	sort.Ints(keys)
+	sort.Ints(keys)   //对切片进行排序sort.Ints(keys)
+	Level("Accumulate past 183 day", count)
 
 	return keys
 }
+
 
 // buildCols generates a map with rows and columns ready to be printed to screen
 func buildCols(keys []int, commits map[int]int) map[int]column {

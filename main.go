@@ -11,10 +11,13 @@ func main() {
 	flag.StringVar(&email, "email", "your@email.com", "the email to scan")
 	flag.Parse()
 
+	InitZapLog()
+	defer logger.Sync()
+
 	if folder != "" {
 		scan(folder)
 		return
 	}
-
+	Level("Scan Email",email)
 	stats(email)
 }
